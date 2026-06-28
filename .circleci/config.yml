@@ -17,8 +17,8 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y bc build-essential zip curl libstdc++6 git python3 libssl-dev repo ccache rsync wget libncurses5 libncurses5-dev imagemagick openjdk-11-jdk
-            git config --global user.name "zrqasm"
-            git config --global user.email "zrqasm@local"
+            git config --global user.name "jamesnguyen"
+            git config --global user.email "jamesnguyen@local"
 
       - restore_cache:
           keys:
@@ -29,16 +29,17 @@ jobs:
           name: "Repo Sync & Inject Manifest"
           command: |
             mkdir -p ~/android && cd ~/android
-            repo init -u https://github.com/LineageOS/android.git -b lineage-18.1 --depth=1
+            repo init -u https://github.com/LineageOS/android.git -b lineage-17.1 --depth=1
             mkdir -p .repo/local_manifests
             cat \<< 'EOF' > .repo/local_manifests/roomservice.xml
             <?xml version="1.0" encoding="UTF-8"?>
             <manifest>
-              <remote name="doll" fetch="https://github.com/majaahh" revision="lineage-18.1" />
-              <remote name="los" fetch="https://github.com/LineageOS" revision="lineage-18.1" />
-              <project path="device/samsung/a9y18qlte" name="device_samsung_a9y18qlte" remote="doll" />
-              <project path="kernel/samsung/a9y18qlte" name="kernel_samsung_a9y18qlte" remote="doll" revision="aosp" />
-              <project path="vendor/samsung/a9y18qlte" name="vendor_samsung_a9y18qlte" remote="doll" />
+              <remote name="a9" fetch="https://github.com/a9y18qlte-open" revision="lineage-17.1" />
+              <remote name="los" fetch="https://github.com/LineageOS" revision="lineage-17.1" />
+              <project path="device/samsung/sdm660-common" name="device_samsung_sdm660-common" remote="a9" revision="lineage-17.1" />
+              <project path="device/samsung/a9y18qlte" name="device_samsung_a9y18qlte" remote="a9" revision="lineage-17.1" />
+              <project path="kernel/samsung/sdm660" name="kernel_samsung_sdm660" remote="a9" revision="CAF" />
+              <project path="vendor/samsung/sdm660" name="vendor_samsung_sdm660-common" remote="a9" revision="lineage-17.1" />
               <project path="hardware/qcom-caf/sdm660/display" name="android_hardware_qcom_display" groups="pdk-qcom,sdm660" remote="los" />
               <project path="hardware/qcom-caf/sdm660/audio" name="android_hardware_qcom_audio" groups="pdk-qcom,sdm660" remote="los" />
               <project path="hardware/qcom-caf/sdm660/media" name="android_hardware_qcom_media" groups="pdk-qcom,sdm660" remote="los" />
