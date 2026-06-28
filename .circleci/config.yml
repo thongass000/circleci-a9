@@ -26,27 +26,10 @@ jobs:
             - v1-ccache-a9y18qlte-
 
       - run:
-          name: "Repo Sync & Inject Manifest"
+          name: "Repo Sync"
           command: |
             mkdir -p ~/android && cd ~/android
             repo init -u https://github.com/LineageOS/android.git -b lineage-17.1 --depth=1
-            mkdir -p .repo/local_manifests
-            cat \<< 'EOF' > .repo/local_manifests/roomservice.xml
-            <?xml version="1.0" encoding="UTF-8"?>
-            <manifest>
-              <remote name="a9" fetch="https://github.com/a9y18qlte-open" revision="lineage-17.1" />
-              <remote name="los" fetch="https://github.com/LineageOS" revision="lineage-17.1" />
-              <project path="device/samsung/sdm660-common" name="device_samsung_sdm660-common" remote="a9" revision="lineage-17.1" />
-              <project path="device/samsung/a9y18qlte" name="device_samsung_a9y18qlte" remote="a9" revision="lineage-17.1" />
-              <project path="kernel/samsung/sdm660" name="kernel_samsung_sdm660" remote="a9" revision="CAF" />
-              <project path="vendor/samsung/sdm660" name="vendor_samsung_sdm660-common" remote="a9" revision="lineage-17.1" />
-              <project path="hardware/qcom-caf/sdm660/display" name="android_hardware_qcom_display" groups="pdk-qcom,sdm660" remote="los" />
-              <project path="hardware/qcom-caf/sdm660/audio" name="android_hardware_qcom_audio" groups="pdk-qcom,sdm660" remote="los" />
-              <project path="hardware/qcom-caf/sdm660/media" name="android_hardware_qcom_media" groups="pdk-qcom,sdm660" remote="los" />
-              <project path="device/samsung_slsi/sepolicy" name="android_device_samsung_slsi_sepolicy" remote="los" />
-              <project path="hardware/samsung" name="android_hardware_samsung" remote="los" />
-            </manifest>
-            EOF
             for i in 1 2 3; do
               repo sync \
                   --current-branch \
@@ -61,9 +44,42 @@ jobs:
             done
 
       - run:
-          name: "Execute Build"
+          name: "Inject Manifest and Execute Build"
           no_output_timeout: 5h
           command: |
+            mkdir -p .repo/local_manifests
+            cat \<< 'EOF' > .repo/local_manifests/roomservice.xml
+            <?xml version="1.0" encoding="UTF-8"?>
+            <manifest>
+              <remote name="a9" fetch="https://github.com/a9y18qlte-open" revision="lineage-17.1" />
+              <remote name="los" fetch="https://github.com/LineageOS" revision="lineage-17.1" />
+              <project path="device/samsung/sdm660-common" name="device_samsung_sdm660-common" remote="a9" revision="lineage-17.1" />
+              <project path="device/samsung/a9y18qlte" name="device_samsung_a9y18qlte" remote="a9" revision="lineage-17.1" />
+              <project path="kernel/samsung/sdm660" name="kernel_samsung_sdm660" remote="a9" revision="CAF" />
+              <project path="vendor/samsung/sdm660-common" name="vendor_samsung_sdm660-common" remote="a9" revision="lineage-17.1" />
+              <project path="hardware/qcom-caf/sdm660/display" name="android_hardware_qcom_display" groups="pdk-qcom,sdm660" remote="los" />
+              <project path="hardware/qcom-caf/sdm660/audio" name="android_hardware_qcom_audio" groups="pdk-qcom,sdm660" remote="los" />
+              <project path="hardware/qcom-caf/sdm660/media" name="android_hardware_qcom_media" groups="pdk-qcom,sdm660" remote="los" />
+              <project path="device/samsung_slsi/sepolicy" name="android_device_samsung_slsi_sepolicy" remote="los" />
+              <project path="hardware/samsung" name="android_hardware_samsung" remote="los" />
+            </manifest>
+            EOF
+            for i in 1 2 3; do
+                repo sync \
+                    device/samsung/sdm660-common \
+                    device/samsung/a9y18qlte \
+                    kernel/samsung/sdm660 \
+                    vendor/samsung/sdm660-common \
+                    hardware/qcom-caf/sdm660/audio \
+                    hardware/qcom-caf/sdm660/display \
+                    hardware/qcom-caf/sdm660/media \
+                    hardware/samsung \
+                    device/samsung_slsi/sepolicy \
+                    -j8 && break
+                echo "Retry $i..."
+                sleep 60
+            done
+            
             cd ~/android
             # Python 3 Porting: Replace legacy python calls in the build system
             find build/tools -name "*.py" -exec sed -i 's/python/python3/g' {} +
