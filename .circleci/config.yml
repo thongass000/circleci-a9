@@ -46,7 +46,8 @@ jobs:
       - run:
           name: "Inject Manifest and Execute Build"
           no_output_timeout: 5h
-          command: |
+          command: |      
+            cd ~/android
             mkdir -p .repo/local_manifests
             cat \<< 'EOF' > .repo/local_manifests/roomservice.xml
             <?xml version="1.0" encoding="UTF-8"?>
@@ -80,7 +81,6 @@ jobs:
                 sleep 60
             done
             
-            cd ~/android
             # Python 3 Porting: Replace legacy python calls in the build system
             find build/tools -name "*.py" -exec sed -i 's/python/python3/g' {} +
             find vendor/lineage/build/tools -name "*.py" -exec sed -i 's/python/python3/g' {} + || true
