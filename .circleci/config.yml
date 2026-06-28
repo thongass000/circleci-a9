@@ -8,7 +8,7 @@ jobs:
     environment:
       USE_CCACHE: "1"
       CCACHE_EXEC: "/usr/bin/ccache"
-      _JAVA_OPTIONS: "-Xmx16g"
+      _JAVA_OPTIONS: "-Xmx4g"
     steps:
       - checkout
       
@@ -90,7 +90,7 @@ jobs:
             export WITH_DEXPREOPT=false
             export ALLOW_MISSING_DEPENDENCIES=true
             lunch lineage_a9y18qlte-userdebug
-            mka bacon -j$(nproc --all)
+            mka bacon -j4
 
       - run:
           name: "Upload ROM to Transfer.sh"
