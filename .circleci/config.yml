@@ -47,7 +47,18 @@ jobs:
               <project path="hardware/samsung" name="android_hardware_samsung" remote="los" />
             </manifest>
             EOF
-            repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune
+            for i in 1 2 3; do
+              repo sync \
+                  --current-branch \
+                  -j8 \
+                  --force-sync \
+                  --no-clone-bundle \
+                  --no-tags \
+                  --optimized-fetch \
+                  --prune && break
+              echo "Retry $i..."
+              sleep 60
+            done
 
       - run:
           name: "Execute Build"
