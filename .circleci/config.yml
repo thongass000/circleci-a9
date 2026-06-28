@@ -8,7 +8,6 @@ jobs:
     environment:
       USE_CCACHE: "1"
       CCACHE_EXEC: "/usr/bin/ccache"
-      _JAVA_OPTIONS: "-Xmx4g"
     steps:
       - checkout
       
@@ -85,7 +84,19 @@ jobs:
             find build/tools -name "*.py" -exec sed -i 's/python/python3/g' {} +
             find vendor/lineage/build/tools -name "*.py" -exec sed -i 's/python/python3/g' {} + || true
             
-            ccache -M 50G
+            echo "===== SYSTEM INFO ====="
+            free -h
+            nproc
+            cat /proc/meminfo | grep MemTotal
+            cat /proc/meminfo | grep MemAvailable
+            
+            echo "===== CGROUP MEMORY ====="
+            if [ -f /sys/fs/cgroup/memory.max ]; then
+                cat /sys/fs/cgroup/memory.max
+            fi
+            if [ -f /sys/fs/cgroup/memory/memory.limit_in_bytes ]; then
+                cat /sys/fs/cgroup/memory/memory.limit_in_bytes
+            fi
             source build/envsetup.sh
             export WITH_DEXPREOPT=false
             export ALLOW_MISSING_DEPENDENCIES=true
